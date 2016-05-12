@@ -1,75 +1,110 @@
-#import pandas as pn
-import numpy as np
-from numpy.fft import fft, ifft
-from scipy.sparse.linalg import eigs
 import math
+import numpy as np
+
+from numpy.random import randint
+from numpy.linalg import norm
+from numpy.fft import fft, ifft
+
+from scipy.sparse.linalg import eigs
 from scipy.stats import zscore
 from scipy.ndimage.interpolation import shift
 
-
-def next_greater_power_of_2(x):
-    return 2**(x-1).bit_length()
+def ncc_c(x,y):
+    """
+    >>> ncc_c([1,2,3,4], [1,2,3,4])
+    array([ 0.13333333,  0.36666667,  0.66666667,  1.        ,  0.66666667,
+            0.36666667,  0.13333333])
+    >>> ncc_c([1,1,1], [1,1,1])
+    array([ 0.33333333,  0.66666667,  1.        ,  0.66666667,  0.33333333])
+    >>> ncc_c([1,2,3], [-1,-1,-1])
+    array([-0.15430335, -0.46291005, -0.9258201 , -0.77151675, -0.46291005])
+    """
+    x_len = len(x)
+    fft_size = 1<<(2*x_len-1).bit_length()
+    cc = ifft(fft(x, fft_size) * np.conj(fft(y, fft_size)))
+    cc = np.concatenate((cc[-(x_len-1):], cc[:x_len]))
+    return np.real(cc) / (norm(x) * norm(y))
 
 
 def sbd(x, y):
-    fft_size = next_greater_power_of_2(len(x))
-    cc = np.abs(ifft(fft(x, fft_size) * fft(y, fft_size)))
-    ncc = cc / math.sqrt((sum(x**2) * sum(y**2)))
+    """
+    >>> sbd([1,1,1], [1,1,1])
+    (-2.2204460492503131e-16, array([1, 1, 1]))
+    >>> sbd([0,1,2], [1,2,3])
+    (0.043817112532485103, array([1, 2, 3]))
+    >>> sbd([1,2,3], [0,1,2])
+    (0.043817112532485103, array([0, 1, 2]))
+    """
+    ncc = ncc_c(x, y)
     idx = ncc.argmax()
     dist = 1 - ncc[idx]
-    return dist, shift(y, idx - len(x))
+    yshift = shift(y, (idx + 1) - max(len(x), len(y)))
+    return dist, yshift
+
+def extract_shape(idx, x, j, cur_center):
+    """
+    >>> extract_shape(np.array([0,1,2]), np.array([[1,2,3], [4,5,6]]), 1, np.array([0,3,4]))
+    array([ -1.00000000e+00,  -3.06658683e-19,   1.00000000e+00])
+    >>> extract_shape(np.array([0,1,2]), np.array([[-1,2,3], [4,-5,6]]), 1, np.array([0,3,4]))
+    array([-0.96836405,  1.02888681, -0.06052275])
+    """
+    _a = []
+    for i in range(len(idx)):
+        if idx[i] == j:
+            if cur_center.sum() == 0:
+                opt_x = x[i]
+            else:
+                _, opt_x = sbd(cur_center, x[i])
+            _a.append(opt_x)
+    a = np.array(_a)
+
+    if len(a) == 0:
+        return np.zeros((1, x.shape[1]))
+    columns = a.shape[1]
+    y = zscore(a,axis=1,ddof=1)
+    s = np.dot(y.transpose(), y)
+
+    p = np.empty((columns, columns))
+    p.fill(1.0/columns)
+    p = np.eye(columns) - p
+
+    m = np.dot(np.dot(p, s), p)
+    _, vec = eigs(m, 1)
+    centroid = np.real(vec[:,0])
+    finddistance1 = math.sqrt(((a[0] - centroid) ** 2).sum())
+    finddistance2 = math.sqrt(((a[0] + centroid) ** 2).sum())
+
+    if finddistance1 >= finddistance2:
+        centroid *= -1
+    return zscore(centroid, ddof=1)
 
 
-def extract_shape(x, c):
-    n = len(x)
-    m = len(x[0])
-    new_x = np.zeros((n, m))
-    for i, row in enumerate(x):
-        _, x_i = sbd(c, row)
-        new_x[i] = x_i
-    s = np.dot(new_x.transpose(), new_x)
-    q = np.identiy(len(s)) - np.ones(len(s)) * 1 / m
-    M = np.dot(np.dot(q.transpose(), s), q)
-    _, vec = eigs(M, 1)
-    return vec[0]
+def kshape(x, k):
+    """
+    >>> kshape(np.array([[1,2,3,4], [0,1,2,3], [-1,1,-1,1], [1,2,2,3]]), 2)
+    (array([0, 0, 1, 0]), array([[-1.19623139, -0.26273649,  0.26273649,  1.19623139],
+           [-0.8660254 ,  0.8660254 , -0.8660254 ,  0.8660254 ]]))
+    """
+    m = x.shape[0]
+    idx = randint(0, k, size=m)
+    centroids = np.zeros((k,x.shape[1]))
 
-
-def k_shape(x, k):
-    iter_ = 0
-    idx = np.zeros(len(x))  # TODO dimension, random init
-    old_idx = np.zeros(len(x))
-    c = np.zeros((k,)) # TODO dimension
-    while idx != old_idx and iter_ < 100:
-        old_idx = idx.copy()
+    distances = np.empty((m, k))
+    for _ in range(100):
+        old_idx = idx
         for j in range(k):
-            x_ = []
-            for i, x_i in enumerate(x):
-                if idx(i) == j:
-                    x_.append(x_i)
-            c[j] = extract_shape(x_, c[j])
-        for i, x_i in enumerate(x):
-            min_dist = np.inf
-            for j, c_j in enumerate(c):
-                dist, _ = sbd(c_j, x_i)
-            if dist < min_dist:
-                min_dist = dist
-                idx[i] = j
+            res = extract_shape(idx, x, j, centroids[j])
+            centroids[j] = res
 
+        for i in range(m):
+            for j in range(k):
+                distances[i,j] = 1 - max(ncc_c(x[i], centroids[j]))
+        idx = distances.argmin(1)
+        if norm(old_idx - idx) == 0:
+            break
+    return idx, centroids
 
-def test_extract_shape():
-    a = zscore(np.ones((3, 10)))
-    c = np.arange(10)
-    extract_shape(a, c)
-
-
-def test_sbd():
-    a = np.arange(100)
-    r1 = sbd(zscore(a), zscore(a))
-    r2 = sbd(zscore(a), zscore(shift(a, 3)))
-    r3 = sbd(zscore(a), zscore(shift(a, -3)))
-    r4 = sbd(zscore(a), zscore(shift(a, 30)))
-    r5 = sbd(zscore(a), zscore(shift(a, -30)))
 
 if __name__ == "__main__":
-    test_sbd()
-    test_extract_shape()
+    import doctest
+    doctest.testmod()
