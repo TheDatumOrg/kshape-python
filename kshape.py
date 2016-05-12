@@ -9,7 +9,7 @@ from scipy.sparse.linalg import eigs
 from scipy.stats import zscore
 from scipy.ndimage.interpolation import shift
 
-def ncc_c(x,y):
+def _ncc_c(x,y):
     """
     >>> ncc_c([1,2,3,4], [1,2,3,4])
     array([ 0.13333333,  0.36666667,  0.66666667,  1.        ,  0.66666667,
@@ -26,7 +26,7 @@ def ncc_c(x,y):
     return np.real(cc) / (norm(x) * norm(y))
 
 
-def sbd(x, y):
+def _sbd(x, y):
     """
     >>> sbd([1,1,1], [1,1,1])
     (-2.2204460492503131e-16, array([1, 1, 1]))
@@ -35,13 +35,13 @@ def sbd(x, y):
     >>> sbd([1,2,3], [0,1,2])
     (0.043817112532485103, array([0, 1, 2]))
     """
-    ncc = ncc_c(x, y)
+    ncc = _ncc_c(x, y)
     idx = ncc.argmax()
     dist = 1 - ncc[idx]
     yshift = shift(y, (idx + 1) - max(len(x), len(y)))
     return dist, yshift
 
-def extract_shape(idx, x, j, cur_center):
+def _extract_shape(idx, x, j, cur_center):
     """
     >>> extract_shape(np.array([0,1,2]), np.array([[1,2,3], [4,5,6]]), 1, np.array([0,3,4]))
     array([ -1.00000000e+00,  -3.06658683e-19,   1.00000000e+00])
@@ -54,7 +54,7 @@ def extract_shape(idx, x, j, cur_center):
             if cur_center.sum() == 0:
                 opt_x = x[i]
             else:
-                _, opt_x = sbd(cur_center, x[i])
+                _, opt_x = _sbd(cur_center, x[i])
             _a.append(opt_x)
     a = np.array(_a)
 
@@ -79,7 +79,7 @@ def extract_shape(idx, x, j, cur_center):
     return zscore(centroid, ddof=1)
 
 
-def kshape(x, k):
+def _kshape(x, k):
     """
     >>> kshape(np.array([[1,2,3,4], [0,1,2,3], [-1,1,-1,1], [1,2,2,3]]), 2)
     (array([0, 0, 1, 0]), array([[-1.19623139, -0.26273649,  0.26273649,  1.19623139],
@@ -93,17 +93,27 @@ def kshape(x, k):
     for _ in range(100):
         old_idx = idx
         for j in range(k):
-            res = extract_shape(idx, x, j, centroids[j])
+            res = _extract_shape(idx, x, j, centroids[j])
             centroids[j] = res
 
         for i in range(m):
             for j in range(k):
-                distances[i,j] = 1 - max(ncc_c(x[i], centroids[j]))
+                distances[i,j] = 1 - max(_ncc_c(x[i], centroids[j]))
         idx = distances.argmin(1)
         if norm(old_idx - idx) == 0:
             break
     return idx, centroids
 
+def kshape(x, k):
+    idx, centroids = _kshape(np.array(x), k)
+    clusters = []
+    for i, centroid in enumerate(centroids):
+        series = []
+        for j, val in enumerate(idx):
+            if i == val:
+                series.append(j)
+        clusters.append((centroid, series))
+    return clusters
 
 if __name__ == "__main__":
     import doctest
