@@ -19,7 +19,7 @@ Returns list of tuples with the clusters found by kshape. The first value of the
 tuple is zscore normalized centroid. The second value of the tuple is the index
 of assigned series to this cluster.
 The results can be examined by drawing graphs of the zscore normalized values
-n/aand the corresponding centroid.
+and the corresponding centroid.
 
 ## Gotchas when working with real-world time series
 
