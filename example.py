@@ -1,6 +1,5 @@
-from kshape import kshape
+from kshape import kshape, zscore
 import numpy as np
-from scipy.stats import zscore
 
 time_series = [[1,2,3,4], [0,1,2,3], [-1,1,-1,1], [1,2,2,3]]
 cluster_num = 2
