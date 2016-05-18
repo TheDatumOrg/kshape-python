@@ -1,6 +1,7 @@
 ## k-Shape
 
-Python implementation of k-Shape
+Python implementation of [k-Shape](http://www.cs.columbia.edu/~jopa/kshape.html),
+a new fast and accurate unsupervised Time Series cluster algorithm
 
 ### Usage
 
