@@ -7,8 +7,6 @@ from numpy.linalg import norm
 from numpy.fft import fft, ifft
 
 
-#from scipy.linalg import eigh
-
 def zscore(a, axis=0, ddof=0):
     a = np.asanyarray(a)
     mns = a.mean(axis=axis)

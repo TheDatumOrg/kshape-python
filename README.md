@@ -32,9 +32,12 @@ import pandas as pd
 # assuming the time series are stored in a tab seperated file, where `time` is
 # the name of the column containing the timestamp
 df = pd.read_csv(filename, sep="\t", index_col='time', parse_dates=True)
-df = df.fillna(method="bfill", limit=1e9)
-# drop rows with the same time stamp
-df = df.groupby(level=0).first()
+# use a meaningful sample size depending on how the frequency of your time series:
+# Higher is more accurate, but if series gets too long, the calculation gets cpu and memory intensive.
+# Keeping the length below 2000 values is usually a good idea.
+df = df.resample("500ms").mean()
+df.interpolate(method="time", limit_direction="both", inplace=True)
+df.fillna(method="bfill", inplace=True)
 ```
 
 - kshape also expect no time series with a constant observation value or 'n/a'
