@@ -1,7 +1,8 @@
 # k-Shape
 
 Python implementation of [k-Shape](http://www.cs.columbia.edu/~jopa/kshape.html),
-a new fast and accurate unsupervised Time Series cluster algorithm
+a new fast and accurate unsupervised Time Series cluster algorithm.
+[See also](#relevant-articles)
 
 ## Usage
 
@@ -47,4 +48,13 @@ time_series = []
 for f in df.columns:
   if not df[f].isnull().any() and df[f].var() != 0:
     time_series.append[df[f]]
+```
+
+## Relevant Articles
+
+```
+Paparrizos J and Gravano L (2015).
+k-Shape: Efficient and Accurate Clustering of Time Series.
+In Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data, series SIGMOD '15,
+pp. 1855-1870. ISBN 978-1-4503-2758-9, http://doi.org/10.1145/2723372.2737793. '
 ```
