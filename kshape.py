@@ -172,5 +172,5 @@ def kshape(x, k):
     return clusters
 
 if __name__ == "__main__":
-    import doctest
+    import sys, doctest
     sys.exit(doctest.testmod()[0])
