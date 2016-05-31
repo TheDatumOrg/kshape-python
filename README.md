@@ -1,5 +1,7 @@
 # k-Shape
 
+[![Build Status](https://travis-ci.org/Mic92/kshape.svg?branch=master)](https://travis-ci.org/Mic92/kshape)
+
 Python implementation of [k-Shape](http://www.cs.columbia.edu/~jopa/kshape.html),
 a new fast and accurate unsupervised Time Series cluster algorithm.
 [See also](#relevant-articles)
