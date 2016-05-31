@@ -1,1 +1,2 @@
-numpy
+numpy; platform_python_implementation != "PyPy"
+git+https://bitbucket.org/pypy/numpy.git; platform_python_implementation == "PyPy"
