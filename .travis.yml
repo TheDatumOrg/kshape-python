@@ -14,5 +14,7 @@ matrix:
   allow_failures:
     # numpy for pypy3 is still work in progress
     - python: pypy3
+    # travis version's of pypy is too old
+    - python: pypy
 install: pip install -r requirements.txt
 script: python kshape.py -v
