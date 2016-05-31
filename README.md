@@ -6,7 +6,7 @@ a new fast and accurate unsupervised Time Series cluster algorithm.
 
 ## Usage
 
-```
+```python
 from kshape import kshape, zscore
 
 time_series = [[1,2,3,4], [0,1,2,3], [0,1,2,3], [1,2,2,3]]
@@ -28,7 +28,7 @@ and the corresponding centroid.
 - In the following a tab seperated file is assumed, where each column is a different observation;
   gapps in columns happen, when only a certain value at this point in time was obtained.
 
-```
+```python
 import pandas as pd
 # assuming the time series are stored in a tab seperated file, where `time` is
 # the name of the column containing the timestamp
@@ -43,7 +43,7 @@ df.fillna(method="bfill", inplace=True)
 
 - kshape also expect no time series with a constant observation value or 'n/a'
 
-```
+```python
 time_series = []
 for f in df.columns:
   if not df[f].isnull().any() and df[f].var() != 0:
@@ -52,7 +52,7 @@ for f in df.columns:
 
 ## Relevant Articles
 
-```
+```plain
 Paparrizos J and Gravano L (2015).
 k-Shape: Efficient and Accurate Clustering of Time Series.
 In Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data, series SIGMOD '15,
