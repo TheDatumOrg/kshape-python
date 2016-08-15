@@ -1,9 +1,8 @@
 import math
 import numpy as np
 
-from numpy.random import randint, seed
+from numpy.random import randint
 from numpy.linalg import norm, eigh
-from numpy.linalg import norm
 from numpy.fft import fft, ifft
 
 
@@ -12,14 +11,17 @@ def zscore(a, axis=0, ddof=0):
     mns = a.mean(axis=axis)
     sstd = a.std(axis=axis, ddof=ddof)
     if axis and mns.ndim < a.ndim:
-        return ((a - np.expand_dims(mns, axis=axis)) /
-                np.expand_dims(sstd,axis=axis))
+        res = ((a - np.expand_dims(mns, axis=axis)) /
+               np.expand_dims(sstd, axis=axis))
     else:
-        return (a - mns) / sstd
+        res = (a - mns) / sstd
+    return np.nan_to_num(res)
+
 
 def roll_zeropad(a, shift, axis=None):
     a = np.asanyarray(a)
-    if shift == 0: return a
+    if shift == 0:
+        return a
     if axis is None:
         n = a.size
         reshape = True
@@ -31,33 +33,17 @@ def roll_zeropad(a, shift, axis=None):
     elif shift < 0:
         shift += n
         zeros = np.zeros_like(a.take(np.arange(n-shift), axis))
-        res = np.concatenate((a.take(np.arange(n-shift,n), axis), zeros), axis)
+        res = np.concatenate((a.take(np.arange(n-shift, n), axis), zeros), axis)
     else:
-        zeros = np.zeros_like(a.take(np.arange(n-shift,n), axis))
+        zeros = np.zeros_like(a.take(np.arange(n-shift, n), axis))
         res = np.concatenate((zeros, a.take(np.arange(n-shift), axis)), axis)
     if reshape:
         return res.reshape(a.shape)
     else:
         return res
 
-# TODO vectorized version of _ncc_c
-#def _ncc_c(x,y):
-#    """
-#    >>> _ncc_c(np.array([[1,2,3,4]]), np.array([[1,2,3,4]]))
-#    array([[ 0.13333333,  0.36666667,  0.66666667,  1.        ,  0.66666667,
-#             0.36666667,  0.13333333]])
-#    >>> _ncc_c(np.array([[1,1,1]]), np.array([[1,1,1]]))
-#    array([[ 0.33333333,  0.66666667,  1.        ,  0.66666667,  0.33333333]])
-#    >>> _ncc_c(np.array([[1,2,3]]), np.array([[-1,-1,-1]]))
-#    array([[-0.15430335, -0.46291005, -0.9258201 , -0.77151675, -0.46291005]])
-#    """
-#    x_len = x.shape[1]
-#    fft_size = 1<<(2*x_len-1).bit_length()
-#    cc = ifftn(fftn(x, (fft_size,)) * np.conj(fftn(y, (fft_size,))))
-#    cc = np.concatenate((cc[:, -(x_len-1):], cc[:, :x_len]), axis=1)
-#    return np.real(cc) / (norm(x) * norm(y))
 
-def _ncc_c(x,y):
+def _ncc_c(x, y):
     """
     >>> _ncc_c([1,2,3,4], [1,2,3,4])
     array([ 0.13333333,  0.36666667,  0.66666667,  1.        ,  0.66666667,
@@ -67,11 +53,14 @@ def _ncc_c(x,y):
     >>> _ncc_c([1,2,3], [-1,-1,-1])
     array([-0.15430335, -0.46291005, -0.9258201 , -0.77151675, -0.46291005])
     """
+    den = np.array(norm(x) * norm(y))
+    den[den == 0] = np.Inf
+
     x_len = len(x)
-    fft_size = 1<<(2*x_len-1).bit_length()
+    fft_size = 1 << (2*x_len-1).bit_length()
     cc = ifft(fft(x, fft_size) * np.conj(fft(y, fft_size)))
     cc = np.concatenate((cc[-(x_len-1):], cc[:x_len]))
-    return np.real(cc) / (norm(x) * norm(y))
+    return np.real(cc) / den
 
 
 def _sbd(x, y):
@@ -91,7 +80,6 @@ def _sbd(x, y):
     return dist, yshift
 
 
-#@profile
 def _extract_shape(idx, x, j, cur_center):
     """
     >>> _extract_shape(np.array([0,1,2]), np.array([[1,2,3], [4,5,6]]), 1, np.array([0,3,4]))
@@ -116,7 +104,7 @@ def _extract_shape(idx, x, j, cur_center):
     if len(a) == 0:
         return np.zeros((1, x.shape[1]))
     columns = a.shape[1]
-    y = zscore(a,axis=1,ddof=1)
+    y = zscore(a, axis=1, ddof=1)
     s = np.dot(y.transpose(), y)
 
     p = np.empty((columns, columns))
@@ -125,7 +113,7 @@ def _extract_shape(idx, x, j, cur_center):
 
     m = np.dot(np.dot(p, s), p)
     _, vec = eigh(m)
-    centroid = vec[:,-1]
+    centroid = vec[:, -1]
     finddistance1 = math.sqrt(((a[0] - centroid) ** 2).sum())
     finddistance2 = math.sqrt(((a[0] + centroid) ** 2).sum())
 
@@ -133,6 +121,7 @@ def _extract_shape(idx, x, j, cur_center):
         centroid *= -1
 
     return zscore(centroid, ddof=1)
+
 
 def _kshape(x, k):
     """
@@ -143,7 +132,7 @@ def _kshape(x, k):
     """
     m = x.shape[0]
     idx = randint(0, k, size=m)
-    centroids = np.zeros((k,x.shape[1]))
+    centroids = np.zeros((k, x.shape[1]))
     distances = np.empty((m, k))
 
     for _ in range(100):
@@ -152,13 +141,14 @@ def _kshape(x, k):
             centroids[j] = _extract_shape(idx, x, j, centroids[j])
 
         for i in range(m):
-             for j in range(k):
-                 distances[i,j] = 1 - max(_ncc_c(x[i], centroids[j]))
+            for j in range(k):
+                distances[i, j] = 1 - max(_ncc_c(x[i], centroids[j]))
         idx = distances.argmin(1)
         if np.array_equal(old_idx, idx):
             break
 
     return idx, centroids
+
 
 def kshape(x, k):
     idx, centroids = _kshape(np.array(x), k)
@@ -172,5 +162,6 @@ def kshape(x, k):
     return clusters
 
 if __name__ == "__main__":
-    import sys, doctest
+    import sys
+    import doctest
     sys.exit(doctest.testmod()[0])
