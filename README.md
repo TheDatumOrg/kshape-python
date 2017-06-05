@@ -13,9 +13,9 @@ from kshape import kshape, zscore
 
 time_series = [[1,2,3,4], [0,1,2,3], [0,1,2,3], [1,2,2,3]]
 cluster_num = 2
-clusters = kshape(zscore(time_series), cluster_num)
-#=> [(array([-0.42860026, -1.15025211,  1.38751707, -0.42860026,  0.61993557]), [3]),
-#    (array([-1.56839539, -0.40686255,  0.84042433,  0.67778452,  0.45704908]), [0, 1, 2])]
+clusters = kshape(zscore(time_series, axis=1), cluster_num)
+#=> [(array([-1.161895  , -0.38729833,  0.38729833,  1.161895  ]), [0, 1, 2]),
+#    (array([-1.22474487,  0.        ,  0.        ,  1.22474487]), [3])]
 ```
 
 Returns list of tuples with the clusters found by kshape. The first value of the
