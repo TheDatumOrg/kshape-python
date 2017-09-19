@@ -6,10 +6,16 @@ Python implementation of [k-Shape](http://www.cs.columbia.edu/~jopa/kshape.html)
 a new fast and accurate unsupervised time-series cluster algorithm.
 [See also](#relevant-articles)
 
+## Installation
+If you are using a virtualenvironment activate it. Otherwise you can install
+into the system python
+
+    python setup.py install
+
 ## Usage
 
 ```python
-from kshape import kshape, zscore
+from kshape.core import kshape, zscore
 
 time_series = [[1,2,3,4], [0,1,2,3], [0,1,2,3], [1,2,2,3]]
 cluster_num = 2
