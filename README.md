@@ -10,7 +10,9 @@ a new fast and accurate unsupervised time-series cluster algorithm.
 If you are using a virtualenvironment activate it. Otherwise you can install
 into the system python
 
-    python setup.py install
+```console
+$ python setup.py install
+```
 
 ## Usage
 
