@@ -3,10 +3,30 @@ from setuptools import setup, find_packages
 
 __version__ = "1.0"
 
+CLASSIFIERS = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
 setup(
     name="kshape",
     version=__version__,
-    description="Python implementation of kshape",
-    packages=find_packages(exclude=["*.tests"]),
+    description="Python implementation of k-Shape",
+    classifiers=CLASSIFIERS,
+    author="J. Thalheim",
+    author_email="joerg@thalheim.io",
+    packages=find_packages(),
+    zip_safe=True,
+    test_suite="kshape.test",
+    license="",
+    url="https://github.com/Mic92/kshape",
     entry_points={}
 )
