@@ -63,6 +63,38 @@ def _ncc_c(x, y):
     return np.real(cc) / den
 
 
+def _ncc_c_2dim(x, y):
+    """
+    Variant of NCCc that operates with 2 dimensional X arrays and 1 dimensional
+    y vector
+
+    Returns a 2 dimensional array of normalized fourier transforms
+    """
+    den = np.array(norm(x, axis=1) * norm(y))
+    den[den == 0] = np.Inf
+    x_len = x.shape[-1]
+    fft_size = 1 << (2*x_len-1).bit_length()
+    cc = ifft(fft(x, fft_size) * np.conj(fft(y, fft_size)))
+    cc = np.concatenate((cc[:,-(x_len-1):], cc[:,:x_len]), axis=1)
+    return np.real(cc) / den[:, np.newaxis]
+
+
+def _ncc_c_3dim(x, y):
+    """
+    Variant of NCCc that operates with 2 dimensional X arrays and 2 dimensional
+    y vector
+
+    Returns a 3 dimensional array of normalized fourier transforms
+    """
+    den = norm(x, axis=1)[:, None] * norm(y, axis=1)
+    den[den == 0] = np.Inf
+    x_len = x.shape[-1]
+    fft_size = 1 << (2*x_len-1).bit_length()
+    cc = ifft(fft(x, fft_size) * np.conj(fft(y, fft_size))[:, None])
+    cc = np.concatenate((cc[:,:,-(x_len-1):], cc[:,:,:x_len]), axis=2)
+    return np.real(cc) / den.T[:, :, None]
+
+
 def _sbd(x, y):
     """
     >>> _sbd([1,1,1], [1,1,1])
@@ -140,9 +172,8 @@ def _kshape(x, k):
         for j in range(k):
             centroids[j] = _extract_shape(idx, x, j, centroids[j])
 
-        for i in range(m):
-            for j in range(k):
-                distances[i, j] = 1 - max(_ncc_c(x[i], centroids[j]))
+        distances = (1 - _ncc_c_3dim(x, centroids).max(axis=2)).T
+
         idx = distances.argmin(1)
         if np.array_equal(old_idx, idx):
             break

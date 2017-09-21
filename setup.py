@@ -7,6 +7,6 @@ setup(
     name="kshape",
     version=__version__,
     description="Python implementation of kshape",
-    packages=find_packages(),
+    packages=find_packages(exclude=["*.tests"]),
     entry_points={}
 )
