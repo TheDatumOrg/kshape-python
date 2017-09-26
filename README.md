@@ -6,8 +6,10 @@ Python implementation of [k-Shape](http://www.cs.columbia.edu/~jopa/kshape.html)
 a new fast and accurate unsupervised time-series cluster algorithm.
 [See also](#relevant-articles)
 
+We used this implementation for our paper: [Sieve: Actionable Insights from Monitored Metrics in Distributed Systems](https://sieve-microservices.github.io/)
+
 ## Installation
-If you are using a virtualenvironment activate it. Otherwise you can install
+If you are using a [virtualenv](https://virtualenv.pypa.io/en/stable/) activate it. Otherwise you can install
 into the system python
 
 ```console
@@ -62,9 +64,21 @@ for f in df.columns:
 
 ## Relevant Articles
 
+### Original paper
+
 ```plain
 Paparrizos J and Gravano L (2015).
 k-Shape: Efficient and Accurate Clustering of Time Series.
 In Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data, series SIGMOD '15,
 pp. 1855-1870. ISBN 978-1-4503-2758-9, http://doi.org/10.1145/2723372.2737793. '
+```
+
+### Our paper where we used the python implementation
+```bibtex
+@article{sieve-middleware-2017,
+  author       = {J{\"o}rg Thalheim, Antonio Rodrigues, Istemi Ekin Akkus, Pramod Bhatotia, Ruichuan Chen, Bimal Viswanath, Lei Jiao, Christof Fetzer},
+  title        = {Sieve: Actionable Insights from Monitored Metrics in Distributed Systems}
+  booktitle    = {Proceedings of Middleware Conference (Middleware)},
+  year         = {2017},
+}
 ```
