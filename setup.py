@@ -33,5 +33,6 @@ setup(
     test_suite="kshape.test",
     license="",
     url="https://github.com/Mic92/kshape",
-    entry_points={}
+    entry_points={},
+    install_requires=['numpy']
 )
