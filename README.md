@@ -9,6 +9,15 @@ a new fast and accurate unsupervised time-series cluster algorithm.
 We used this implementation for our paper: [Sieve: Actionable Insights from Monitored Metrics in Distributed Systems](https://sieve-microservices.github.io/)
 
 ## Installation
+
+kshape is available on PyPI https://pypi.python.org/pypi/kshape
+
+```console
+$ pip install kshape
+```
+
+### Install from source
+
 If you are using a [virtualenv](https://virtualenv.pypa.io/en/stable/) activate it. Otherwise you can install
 into the system python
 
