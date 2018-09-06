@@ -4,7 +4,7 @@ import numpy as np
 from numpy.random import randint
 from numpy.linalg import norm, eigh
 from numpy.fft import fft, ifft
-from sklearn.externals.joblib import Parallel,delayed
+from joblib import Parallel,delayed
 from sklearn.utils import check_random_state
 
 
@@ -159,11 +159,6 @@ def _extract_shape(idx, x, j, cur_center):
 
 def _kshape(x, k,n_init=1, max_iter=100, n_jobs = 1, random_state=None):
     """
-    Runs multiple initializations of kshape and returns the best in terms of ShapeBasedDistance. 
-    max_iter is the maximum number of iterations within one run, 
-    n_jobs is the number of jobs: 1 is non-parallel version, if -1, all CPUs are used
-    """
-    """
     >>> from numpy.random import seed; seed(0)
     >>> _kshape(np.array([[1,2,3,4], [0,1,2,3], [-1,1,-1,1], [1,2,2,3]]), 2)
     (array([0, 0, 1, 0]), array([[-1.2244258 , -0.35015476,  0.52411628,  1.05046429],
@@ -236,6 +231,11 @@ def _kshape_single(x, k, max_iter=100, random_state=None):
     return idx, centroids, tot_dist, iterations
 
 def kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None):
+    """
+    Runs multiple initializations of kshape and returns the best in terms of ShapeBasedDistance. 
+    max_iter is the maximum number of iterations within one run, 
+    n_jobs is the number of jobs: 1 is non-parallel version, if -1, all CPUs are used
+    """
     idx, centroids = _kshape(np.array(x), k, n_init=n_init, max_iter=max_iter, n_jobs=n_jobs, random_state= random_state)
     clusters = []
     for i, centroid in enumerate(centroids):
