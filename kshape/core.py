@@ -159,6 +159,11 @@ def _extract_shape(idx, x, j, cur_center):
 
 def _kshape(x, k,n_init=1, max_iter=100, n_jobs = 1, random_state=None):
     """
+    Runs multiple initializations of kshape and returns the best in terms of ShapeBasedDistance. 
+    max_iter is the maximum number of iterations within one run, 
+    n_jobs is the number of jobs: 1 is non-parallel version, if -1, all CPUs are used
+    """
+    """
     >>> from numpy.random import seed; seed(0)
     >>> _kshape(np.array([[1,2,3,4], [0,1,2,3], [-1,1,-1,1], [1,2,2,3]]), 2)
     (array([0, 0, 1, 0]), array([[-1.2244258 , -0.35015476,  0.52411628,  1.05046429],
@@ -170,15 +175,13 @@ def _kshape(x, k,n_init=1, max_iter=100, n_jobs = 1, random_state=None):
     if n_jobs ==1:
 
         for i_init in range(n_init):    
-            # n_init is the number of random starting points
-            # pdb.set_trace()
             
             idx, centroids,tot_dist, iterations = _kshape_single(x, k, max_iter=max_iter, random_state= random_state) 
             if best_tot_dist is None or tot_dist < best_tot_dist:
                 best_idx = idx.copy()
                 best_centroids = centroids.copy()
                 best_tot_dist = tot_dist
-    else: # n_jobs not =1 # if -1, all CPUs are used
+    else: 
         # parallelisation of kshape runs
         seeds = random_state.randint(np.iinfo(np.int32).max,size=n_init)
         results = Parallel(n_jobs=n_jobs, verbose=0)(
@@ -194,7 +197,7 @@ def _kshape(x, k,n_init=1, max_iter=100, n_jobs = 1, random_state=None):
     # the following return works when running _kshape() directly, and has extended outputs
     #return {'centroids':best_centroids, 'labels':best_idx, 'distance':best_tot_dist,'centroids_all':centroids,'labels_all':idx,'distance_all':tot_dist,'iterations':iterations}
 
-def _kshape_single(x, k, max_iter=10000, random_state=None):
+def _kshape_single(x, k, max_iter=100, random_state=None):
 
     random_state = check_random_state(random_state)
     m = x.shape[0] # number of data points (365)

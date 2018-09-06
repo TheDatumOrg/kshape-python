@@ -34,5 +34,5 @@ setup(
     license="",
     url="https://github.com/Mic92/kshape",
     entry_points={},
-    install_requires=['numpy']
+    install_requires=['numpy','sklearn']
 )
