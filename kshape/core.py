@@ -4,7 +4,6 @@ import numpy as np
 from numpy.random import randint
 from numpy.linalg import norm, eigh
 from numpy.fft import fft, ifft
-import pdb
 from sklearn.externals.joblib import Parallel,delayed
 from sklearn.utils import check_random_state
 
@@ -192,6 +191,7 @@ def _kshape(x, k,n_init=1, max_iter=100, n_jobs = 1, random_state=None):
         best_centroids = centroids[best]
         best_tot_dist = tot_dist[best]
     return best_idx,best_centroids 
+    # the following return works when running _kshape() directly, and has extended outputs
     #return {'centroids':best_centroids, 'labels':best_idx, 'distance':best_tot_dist,'centroids_all':centroids,'labels_all':idx,'distance_all':tot_dist,'iterations':iterations}
 
 def _kshape_single(x, k, max_iter=10000, random_state=None):
