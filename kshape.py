@@ -7,7 +7,6 @@ from numpy.fft import fft, ifft
 import pdb
 from sklearn.externals.joblib import Parallel,delayed
 from sklearn.utils import check_random_state
-import sys
 
 
 def zscore(a, axis=0, ddof=0):
@@ -193,15 +192,10 @@ def _kshape_single(x, k, max_iter=10000, random_state=None):
                 distances[i, j] = 1 - max(_ncc_c(x[i], centroids[j]))
         idx = distances.argmin(1)
 
-        sys.stdout.flush() # empty the buffer
         if np.array_equal(old_idx, idx):
-            sys.stdout.write( "iter: " +  str(_) + " k=" + str(k)+"\n")
-            sys.stdout.flush() # empty the buffer
             iterations = _
             break
         elif _==(max_iter-1):
-            sys.stdout.write( "iter: " + str(_) + " k=" + str(k)+"\n")
-            sys.stdout.flush() # empty the buffer 
             iterations = _
     dist_daily = distances.min(1)
     tot_dist = np.sum(dist_daily) # total distance, for n_init>1
