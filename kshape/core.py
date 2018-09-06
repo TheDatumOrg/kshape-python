@@ -208,7 +208,6 @@ def _kshape_single(x, k, max_iter=10000, random_state=None):
     distances = np.empty((m, k))
 
     for _ in range(max_iter):
-        # increase iterations with each k
         old_idx = idx
         if np.unique(idx).shape[0] != k: # if one of the clusters is empty, start anew
             empty_clust = True
