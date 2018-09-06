@@ -4,6 +4,10 @@ import numpy as np
 from numpy.random import randint
 from numpy.linalg import norm, eigh
 from numpy.fft import fft, ifft
+import pdb
+from sklearn.externals.joblib import Parallel,delayed
+from sklearn.utils import check_random_state
+import sys
 
 
 def zscore(a, axis=0, ddof=0):
@@ -123,20 +127,64 @@ def _extract_shape(idx, x, j, cur_center):
     return zscore(centroid, ddof=1)
 
 
-def _kshape(x, k):
+def _kshape(x, k,n_init=1, max_iter=100, n_jobs = 1, random_state=None):
     """
     >>> from numpy.random import seed; seed(0)
     >>> _kshape(np.array([[1,2,3,4], [0,1,2,3], [-1,1,-1,1], [1,2,2,3]]), 2)
     (array([0, 0, 1, 0]), array([[-1.2244258 , -0.35015476,  0.52411628,  1.05046429],
            [-0.8660254 ,  0.8660254 , -0.8660254 ,  0.8660254 ]]))
     """
-    m = x.shape[0]
-    idx = randint(0, k, size=m)
+    random_state = check_random_state(random_state)
+    best_tot_dist,best_centroids,best_idx = None,None,None
+    
+    if n_jobs ==1:
+
+        for i_init in range(n_init):    
+            # n_init is the number of random starting points
+            # pdb.set_trace()
+            
+            idx, centroids,tot_dist, iterations = _kshape_single(x, k, max_iter=max_iter, random_state= random_state) 
+            if best_tot_dist is None or tot_dist < best_tot_dist:
+                best_idx = idx.copy()
+                best_centroids = centroids.copy()
+                best_tot_dist = tot_dist
+    else: # n_jobs not =1 # if -1, all CPUs are used
+        # parallelisation of kshape runs
+        seeds = random_state.randint(np.iinfo(np.int32).max,size=n_init)
+        results = Parallel(n_jobs=n_jobs, verbose=0)(
+            delayed(_kshape_single)(x,k,max_iter=max_iter, random_state=seed)
+            for seed in seeds )
+        # Get results with the lowest distances
+        idx, centroids,tot_dist, iterations = zip(*results)
+        best = np.argmin(tot_dist) 
+        best_idx = idx[best]
+        best_centroids = centroids[best]
+        best_tot_dist = tot_dist[best]
+    return best_idx,best_centroids 
+    #return {'centroids':best_centroids, 'labels':best_idx, 'distance':best_tot_dist,'centroids_all':centroids,'labels_all':idx,'distance_all':tot_dist,'iterations':iterations}
+
+def _kshape_single(x, k, max_iter=10000, random_state=None):
+
+    random_state = check_random_state(random_state)
+    m = x.shape[0] # number of data points (365)
+
+    empty_clust = True
+    while empty_clust:  # make sure no empty cluster is generated  
+        idx = random_state.randint(0, k, size=m)
+        if np.unique(idx).shape[0] == k:
+            empty_clust = False
     centroids = np.zeros((k, x.shape[1]))
     distances = np.empty((m, k))
 
-    for _ in range(100):
+    for _ in range(max_iter):
+        # increase iterations with each k
         old_idx = idx
+        if np.unique(idx).shape[0] != k: # if one of the clusters is empty, start anew
+            empty_clust = True
+            while empty_clust:  # make sure no empty cluster is generated  
+                idx = random_state.randint(0, k, size=m)
+                if np.unique(idx).shape[0] == k:
+                    empty_clust = False
         for j in range(k):
             centroids[j] = _extract_shape(idx, x, j, centroids[j])
 
@@ -144,14 +192,24 @@ def _kshape(x, k):
             for j in range(k):
                 distances[i, j] = 1 - max(_ncc_c(x[i], centroids[j]))
         idx = distances.argmin(1)
+
+        sys.stdout.flush() # empty the buffer
         if np.array_equal(old_idx, idx):
+            sys.stdout.write( "iter: " +  str(_) + " k=" + str(k)+"\n")
+            sys.stdout.flush() # empty the buffer
+            iterations = _
             break
+        elif _==(max_iter-1):
+            sys.stdout.write( "iter: " + str(_) + " k=" + str(k)+"\n")
+            sys.stdout.flush() # empty the buffer 
+            iterations = _
+    dist_daily = distances.min(1)
+    tot_dist = np.sum(dist_daily) # total distance, for n_init>1
 
-    return idx, centroids
+    return idx, centroids, tot_dist, iterations
 
-
-def kshape(x, k):
-    idx, centroids = _kshape(np.array(x), k)
+def kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None):
+    idx, centroids = _kshape(np.array(x), k, n_init=n_init, max_iter=max_iter, n_jobs=n_jobs, random_state= random_state)
     clusters = []
     for i, centroid in enumerate(centroids):
         series = []
