@@ -158,7 +158,7 @@ for i in range(num_clusters):
     cluster_centroids[i] = gpu_model[i][0].detach().cpu()
 ```
 
-**Also see [Examples](https://github.com/thedatumorg/kshape-python/examples) for UCR/UAE dataset clustering**               
+**Also see [Examples](https://github.com/TheDatumOrg/kshape-python/tree/master/examples) for UCR/UAE dataset clustering**               
 
 ## Results
 
