@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) [2022] [Sai Prasanna Teja Reddy Bogireddy]
+Copyright (c) [2022] [John Paparrizos]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
