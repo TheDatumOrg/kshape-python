@@ -87,7 +87,7 @@ $ python setup.py install
 We present the runtime performance of *k*-Shape when varying the number of time series, number of clusters, and the lengths of time series. (All results are the average of 5 runs.)
 
 <p align="center">
-    <img src="https://github.com/thedatumorg/kshape-python/blob/main/docs/benchmarks.png">
+    <img src="https://github.com/thedatumorg/kshape-python/docs/benchmarks.png">
 </p>
 
 ## Usage                                                                                                                                     
@@ -158,7 +158,7 @@ for i in range(num_clusters):
     cluster_centroids[i] = gpu_model[i][0].detach().cpu()
 ```
 
-**Also see [Examples](https://github.com/thedatumorg/kshape-python/tree/main/examples) for UCR/UAE dataset clustering**               
+**Also see [Examples](https://github.com/thedatumorg/kshape-python/examples) for UCR/UAE dataset clustering**               
 
 ## Results
 
