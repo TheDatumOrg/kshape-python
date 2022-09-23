@@ -1,0 +1,12 @@
+LICENSE.MD
+README.md
+setup.py
+kshape/__init__.py
+kshape/core.py
+kshape/core_gpu.py
+kshape.egg-info/PKG-INFO
+kshape.egg-info/SOURCES.txt
+kshape.egg-info/dependency_links.txt
+kshape.egg-info/requires.txt
+kshape.egg-info/top_level.txt
+kshape.egg-info/zip-safe
