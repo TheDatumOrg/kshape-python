@@ -9,12 +9,8 @@ CLASSIFIERS = [
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 2.7",
-    "Programming Language :: Python :: 3.2",
-    "Programming Language :: Python :: 3.3",
-    "Programming Language :: Python :: 3.4",
-    "Programming Language :: Python :: 3.5",
-    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -30,7 +26,7 @@ setup(
     packages=find_packages(),
     zip_safe=True,
     license="",
-    url="https://github.com/johnpaparrizos/kshapetemp",
+    url="https://github.com/TheDatumOrg/kshape-python",
     entry_points={},
     install_requires=['numpy']
 )
