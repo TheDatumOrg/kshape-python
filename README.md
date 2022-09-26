@@ -1,7 +1,10 @@
 # *k*-Shape: Efficient and Accurate Clustering of Time Series
 <div align="center">
-<a href="https://badge.fury.io/py/kshape"><img src="https://badge.fury.io/py/kshape.svg" alt="PyPI version" height="18"></a> <img alt="GitHub" src="https://img.shields.io/github/license/TheDatumOrg/kshape-python"> <img alt="GitHub issues" src="https://img.shields.io/github/issues/TheDatumOrg/kshape-python"> <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/kshape">
+<p>
+<img alt="GitHub" src="https://img.shields.io/github/license/TheDatumOrg/kshape-python"> <a href="https://badge.fury.io/py/kshape"><img src="https://badge.fury.io/py/kshape.svg" alt="PyPI version" height="20"></a> <img alt="GitHub issues" src="https://img.shields.io/github/issues/TheDatumOrg/kshape-python"> <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/kshape">
+</p>
 </div>
+
 *k*-Shape is a highly accurate and efficient unsupervised method for univariate and multivariate time-series clustering. *k*-Shape appeared at the ***ACM SIGMOD 2015*** conference, where it was selected as one of the (2) ***best papers*** and received the inaugural ***2015 ACM SIGMOD Research Highlight Award***. An extended version appeared in the ***ACM TODS 2017*** journal. Since then, *k*-Shape has achieved state-of-the-art performance in both ***univariate*** and ***multivariate*** time-series datasets (i.e., *k*-Shape is among the fastest and most accurate time-series clustering methods, ranked in the top positions of established benchmarks with 100+ different datasets). 
 
 *k*-Shape has been widely adopted across different scientific areas (e.g., computer science, social science, space science, engineering, econometrics, biology, neuroscience, and medicine), Fortune 100-500 enterprises (e.g., Exelon, Nokia, and many financial firms), and organizations such as the European Space Agency.
