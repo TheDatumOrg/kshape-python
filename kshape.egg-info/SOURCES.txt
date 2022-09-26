@@ -1,4 +1,3 @@
-LICENSE.MD
 README.md
 setup.py
 kshape/__init__.py
