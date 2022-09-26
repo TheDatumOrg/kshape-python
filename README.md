@@ -2,7 +2,7 @@
 
 <div align="center">
 <p>
-<img alt="PyPI - Downloads" src="https://pepy.tech/badge/kshape"> <img alt="GitHub" src="https://img.shields.io/github/license/TheDatumOrg/kshape-python"> <a href="https://badge.fury.io/py/kshape"><img src="https://badge.fury.io/py/kshape@2x.png" alt="PyPI version" height="20"></a> <img alt="GitHub issues" src="https://img.shields.io/github/issues/TheDatumOrg/kshape-python"> <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/kshape">
+<img alt="PyPI - Downloads" src="https://pepy.tech/badge/kshape"> <img alt="GitHub" src="https://img.shields.io/github/license/TheDatumOrg/kshape-python"> <img alt="PyPI" src="https://img.shields.io/pypi/v/kshape"> <img alt="GitHub issues" src="https://img.shields.io/github/issues/TheDatumOrg/kshape-python"> <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/kshape">
 </p>
 </div>
 
