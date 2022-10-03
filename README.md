@@ -12,8 +12,8 @@
 
 If you use *k*-Shape in your project or research, cite the following two papers:
 
-* [ACM SIGMOD 2015](https://www.paparrizos.org/papers/PaparrizosSIGMOD2015.pdf)
-* [ACM TODS 2017](https://www.paparrizos.org/papers/PaparrizosTODS2017.pdf)
+* [ACM SIGMOD 2015](https://www.paparrizos.org/papers/PaparrizosSIGMOD15.pdf)
+* [ACM TODS 2017](https://www.paparrizos.org/papers/PaparrizosTODS17.pdf)
 
 ## References
 
