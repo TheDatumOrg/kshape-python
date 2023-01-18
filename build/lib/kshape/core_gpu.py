@@ -9,7 +9,7 @@ def zscore(a, axis=0, ddof=0):
     if axis and mns.dim() < a.dim():
         return torch.nan_to_num((a - mns.unsqueeze(axis)).div(sstd.unsqueeze(axis)))
     else:
-        return a.sub_(mns).div(sstd)
+        return torch.nan_to_num(a.sub_(mns).div(sstd))
 
 
 def roll_zeropad(a, shift, axis=None):
