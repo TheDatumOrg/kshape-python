@@ -92,7 +92,9 @@ def _extract_shape(idx, x, j, cur_center):
 
     a = np.array(_a)
     if len(a) == 0:
-        return np.zeros((x.shape[1]))
+        indices = np.random.choice(x.shape[0], 1)
+        return np.squeeze(x[indices].copy())
+        #return np.zeros((x.shape[1]))
 
     columns = a.shape[1]
     y = zscore(a, axis=1, ddof=1)
@@ -129,7 +131,9 @@ def _kshape(x, k, centroid_init='zero', max_iter=100):
         old_idx = idx
 
         for j in range(k):
-            centroids[j] = np.expand_dims(_extract_shape(idx, x, j, centroids[j]), axis=1)
+            for d in range(x.shape[2]):
+                centroids[j, :, d] = _extract_shape(idx, np.expand_dims(x[:, :, d], axis=2), j, np.expand_dims(centroids[j, :, d], axis=1))
+                #centroids[j] = np.expand_dims(_extract_shape(idx, x, j, centroids[j]), axis=1)
 
         pool = multiprocessing.Pool()
         args = []
