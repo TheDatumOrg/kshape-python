@@ -59,7 +59,9 @@ def _extract_shape(idx, x, j, cur_center):
             _a.append(opt_x)
             
     if len(_a) == 0:
-        return torch.zeros((x.shape[1]))
+        indices = torch.randperm(x.shape[0])[:1]
+        return torch.squeeze(x[indices].clone())
+        #return torch.zeros((x.shape[1]))
 
     a = torch.stack(_a)
     
@@ -97,7 +99,9 @@ def _kshape(x, k, centroid_init='zero', max_iter=100):
     for it in range(max_iter):
         old_idx = idx
         for j in range(k):
-            centroids[j] = torch.unsqueeze(_extract_shape(idx, x, j, centroids[j]), dim=1)
+            for d in range(x.shape[2]):
+                centroids[j, :, d] = _extract_shape(idx, torch.unsqueeze(x[:, :, d], axis=2), j, torch.unsqueeze(centroids[j, :, d], axis=1))
+                #centroids[j] = torch.unsqueeze(_extract_shape(idx, x, j, centroids[j]), dim=1)
             
         for i, ts in enumerate(x):
             for c, ct in enumerate(centroids):
