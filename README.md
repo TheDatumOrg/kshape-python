@@ -99,7 +99,8 @@ We present the runtime performance of *k*-Shape when varying the number of time 
 ## Usage                                                                                                                                     
 
 ### Univariate Example:
-```import numpy as np
+``` python
+import numpy as np
 from kshape.core import KShapeClusteringCPU 
 from kshape.core_gpu import KShapeClusteringGPU 
 
@@ -123,7 +124,8 @@ cluster_centroids = ksg.centroids_.detach().cpu()
 ```
 
 ### Multivariate Example:
-```import numpy as np
+``` python
+import numpy as np
 from kshape.core import KShapeClusteringCPU 
 from kshape.core_gpu import KShapeClusteringGPU 
 
