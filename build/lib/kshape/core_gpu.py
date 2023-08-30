@@ -1,15 +1,19 @@
 import math
 import torch
 import numpy as np
-
+from sklearn.base import ClusterMixin, BaseEstimator
 
 def zscore(a, axis=0, ddof=0):
     mns = a.mean(dim=axis)
     sstd = a.std(dim=axis, unbiased=(ddof == 1))
     if axis and mns.dim() < a.dim():
-        return torch.nan_to_num((a - mns.unsqueeze(axis)).div(sstd.unsqueeze(axis)))
+        x=(a - mns.unsqueeze(axis)).div(sstd.unsqueeze(axis))
+        return x.masked_fill(torch.isnan(x), 0)
+        #return torch.nan_to_num((a - mns.unsqueeze(axis)).div(sstd.unsqueeze(axis)))
     else:
-        return torch.nan_to_num(a.sub_(mns).div(sstd))
+        x=a.sub_(mns).div(sstd)
+        return x.masked_fill(torch.isnan(x), 0)
+        #return torch.nan_to_num(a.sub_(mns).div(sstd))
 
 
 def roll_zeropad(a, shift, axis=None):
@@ -59,7 +63,9 @@ def _extract_shape(idx, x, j, cur_center):
             _a.append(opt_x)
             
     if len(_a) == 0:
-        return torch.zeros((x.shape[1]))
+        indices = torch.randperm(x.shape[0])[:1]
+        return torch.squeeze(x[indices].clone())
+        #return torch.zeros((x.shape[1]))
 
     a = torch.stack(_a)
     
@@ -73,7 +79,7 @@ def _extract_shape(idx, x, j, cur_center):
     p = torch.eye(columns, device="cuda", dtype=torch.float32) - p
 
     m = p.mm(s).mm(p)
-    _, vec = torch.symeig(m, eigenvectors=True)
+    _, vec = torch.linalg.eig(m)
     centroid = vec[:, -1]
 
     finddistance1 = torch.norm(a.sub(centroid.reshape((x.shape[1], 1))), 2, dim=(1, 2)).sum()
@@ -83,6 +89,7 @@ def _extract_shape(idx, x, j, cur_center):
         centroid.mul_(-1)
 
     return zscore(centroid, ddof=1)
+
 
 def _kshape(x, k, centroid_init='zero', max_iter=100):
     m = x.shape[0]
@@ -97,7 +104,9 @@ def _kshape(x, k, centroid_init='zero', max_iter=100):
     for it in range(max_iter):
         old_idx = idx
         for j in range(k):
-            centroids[j] = torch.unsqueeze(_extract_shape(idx, x, j, centroids[j]), dim=1)
+            for d in range(x.shape[2]):
+                centroids[j, :, d] = _extract_shape(idx, torch.unsqueeze(x[:, :, d], axis=2), j, torch.unsqueeze(centroids[j, :, d], axis=1))
+                #centroids[j] = torch.unsqueeze(_extract_shape(idx, x, j, centroids[j]), dim=1)
             
         for i, ts in enumerate(x):
             for c, ct in enumerate(centroids):
@@ -109,8 +118,7 @@ def _kshape(x, k, centroid_init='zero', max_iter=100):
             break
 
     return idx, centroids
-
-
+    
 def kshape(x, k, centroid_init='zero', max_iter=100):
     x = torch.tensor(x, device="cuda", dtype=torch.float32)
     idx, centroids = _kshape(x, k, centroid_init=centroid_init, max_iter=max_iter)
@@ -123,6 +131,62 @@ def kshape(x, k, centroid_init='zero', max_iter=100):
         clusters.append((centroid, series))
 
     return clusters
+
+class KShapeClusteringGPU(ClusterMixin,BaseEstimator):
+    labels_= None
+    centroids_ = None
+
+    def __init__(self,n_clusters, centroid_init='zero', max_iter=100):
+        self.n_clusters = n_clusters
+        self.centroid_init = centroid_init
+        self.max_iter = max_iter
+
+
+    def fit(self,X,y=None):
+        clusters = self._fit(X,self.n_clusters, self.centroid_init, self.max_iter)
+        self.labels_ = np.zeros(X.shape[0])
+        self.centroids_ =torch.zeros(self.n_clusters, X.shape[1], X.shape[2], device="cuda", dtype=torch.float32)
+        for i in range(self.n_clusters):
+            self.labels_[clusters[i][1]] = i
+            self.centroids_[i]=clusters[i][0]
+        return self
+
+    def predict(self, X):
+        labels, _ = self._predict(X,self.centroids_)
+        return labels
+        
+    
+    def _predict(self,x, centroids):
+        x = torch.tensor(x, device="cuda", dtype=torch.float32)
+        m = x.shape[0]
+        k=len(centroids)
+        idx = torch.randint(0, self.n_clusters, (m,), dtype=torch.float32).to("cuda")
+        distances = torch.empty(m, self.n_clusters, device="cuda")
+                
+        for i, ts in enumerate(x):
+            for c, ct in enumerate(centroids):
+                dist = 1 - _ncc_c_3dim(ts, ct).max()
+                distances[i, c] = dist
+            
+        idx = distances.argmin(1)
+    
+    
+        return idx, centroids
+    
+    
+    def _fit(self,x, k, centroid_init='zero', max_iter=100):
+        x = torch.tensor(x, device="cuda", dtype=torch.float32)
+        idx, centroids = _kshape(x, k, centroid_init=centroid_init, max_iter=max_iter)
+        clusters = []
+        for i, centroid in enumerate(centroids):
+            series = []
+            for j, val in enumerate(idx):
+                if i == val:
+                    series.append(j)
+            clusters.append((centroid, series))
+    
+        return clusters
+
 
 
 if __name__ == "__main__":

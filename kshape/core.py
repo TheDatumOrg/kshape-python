@@ -4,6 +4,7 @@ import multiprocessing
 from numpy.random import randint
 from numpy.linalg import norm, eigh
 from numpy.fft import fft, ifft
+from sklearn.base import ClusterMixin, BaseEstimator
 
 
 def zscore(a, axis=0, ddof=0):
@@ -82,15 +83,13 @@ def collect_shift(data):
 
 
 def _extract_shape(idx, x, j, cur_center):
-    pool = multiprocessing.Pool()
-    args = []
+    _a=[]
     for i in range(len(idx)):
         if idx[i] == j:
-            args.append([x[i], cur_center])
-    _a = pool.map(collect_shift, args)
-    pool.close()
+            _a.append(collect_shift([x[i], cur_center]))
 
     a = np.array(_a)
+    
     if len(a) == 0:
         indices = np.random.choice(x.shape[0], 1)
         return np.squeeze(x[indices].copy())
@@ -117,7 +116,7 @@ def _extract_shape(idx, x, j, cur_center):
     return zscore(centroid, ddof=1)
 
 
-def _kshape(x, k, centroid_init='zero', max_iter=100):
+def _kshape(x, k, centroid_init='zero', max_iter=100, n_jobs=1):
     m = x.shape[0]
     idx = randint(0, k, size=m)
     if centroid_init == 'zero':
@@ -135,7 +134,7 @@ def _kshape(x, k, centroid_init='zero', max_iter=100):
                 centroids[j, :, d] = _extract_shape(idx, np.expand_dims(x[:, :, d], axis=2), j, np.expand_dims(centroids[j, :, d], axis=1))
                 #centroids[j] = np.expand_dims(_extract_shape(idx, x, j, centroids[j]), axis=1)
 
-        pool = multiprocessing.Pool()
+        pool = multiprocessing.Pool(n_jobs)
         args = []
         for p in range(m):
             for q in range(k):
@@ -166,6 +165,76 @@ def kshape(x, k, centroid_init='zero', max_iter=100):
         clusters.append((centroid, series))
 
     return clusters
+
+
+
+class KShapeClusteringCPU(ClusterMixin,BaseEstimator):
+    labels_= None
+    centroids_ = None
+
+    def __init__(self,n_clusters, centroid_init='zero', max_iter=100, n_jobs=None):
+        self.n_clusters = n_clusters
+        self.centroid_init = centroid_init
+        self.max_iter = max_iter
+        if n_jobs is None:
+            self.n_jobs=1
+        elif n_jobs == -1:
+            self.n_jobs = multiprocessing.cpu_count()
+        else:
+            self.n_jobs=n_jobs
+        
+
+
+    def fit(self,X,y=None):
+        clusters = self._fit(X,self.n_clusters, self.centroid_init, self.max_iter,self.n_jobs)
+        self.labels_ = np.zeros(X.shape[0])
+        self.centroids_ =np.zeros((self.n_clusters, X.shape[1], X.shape[2]))
+        for i in range(self.n_clusters):
+            self.labels_[clusters[i][1]] = i
+            self.centroids_[i]=clusters[i][0]
+        return self
+
+    def predict(self, X):
+        labels, _ = self._predict(X,self.centroids_)
+        return labels
+        
+    
+    def _predict(self,x, centroids):
+        m = x.shape[0]
+        idx = randint(0, self.n_clusters, size=m)
+        distances = np.empty((m, self.n_clusters))
+        
+
+    
+        pool = multiprocessing.Pool(self.n_jobs)
+        args = []
+        for p in range(m):
+            for q in range(self.n_clusters):
+                args.append([x[p, :], centroids[q, :]])
+        result = pool.map(_ncc_c_3dim, args)
+        pool.close()
+        r = 0
+        for p in range(m):
+            for q in range(self.n_clusters):
+                distances[p, q] = 1 - result[r].max()
+                r = r + 1
+    
+        idx = distances.argmin(1)
+
+        return idx, centroids
+    
+    
+    def _fit(self,x, k, centroid_init='zero', max_iter=100,n_jobs=1):
+        idx, centroids = _kshape(np.array(x), k, centroid_init=centroid_init, max_iter=max_iter, n_jobs=n_jobs)
+        clusters = []
+        for i, centroid in enumerate(centroids):
+            series = []
+            for j, val in enumerate(idx):
+                if i == val:
+                    series.append(j)
+            clusters.append((centroid, series))
+    
+        return clusters
 
 
 if __name__ == "__main__":
