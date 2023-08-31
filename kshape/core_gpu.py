@@ -79,7 +79,7 @@ def _extract_shape(idx, x, j, cur_center):
     p = torch.eye(columns, device="cuda", dtype=torch.float32) - p
 
     m = p.mm(s).mm(p)
-    _, vec = torch.linalg.eigh(m)
+    _, vec = torch.linalg.eigh(m,UPLO='U')
     centroid = vec[:, -1]
 
     finddistance1 = torch.norm(a.sub(centroid.reshape((x.shape[1], 1))), 2, dim=(1, 2)).sum()
