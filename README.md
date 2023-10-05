@@ -99,69 +99,53 @@ We present the runtime performance of *k*-Shape when varying the number of time 
 ## Usage                                                                                                                                     
 
 ### Univariate Example:
-```python
+``` python
 import numpy as np
-from kshape.core import kshape as ks_cpu
-from kshape.core_gpu import kshape as ks_gpu
+from kshape.core import KShapeClusteringCPU 
+from kshape.core_gpu import KShapeClusteringGPU 
 
 univariate_ts_datasets = np.expand_dims(np.random.rand(200, 60), axis=2)
 num_clusters = 3
 
 # CPU Model
-cpu_model = ks_cpu(univariate_ts_datasets, num_clusters, centroid_init='zero', max_iter=100)
+ksc = KShapeClusteringCPU(num_clusters, centroid_init='zero', max_iter=100, n_jobs=-1)
+ksc.fit(univariate_ts_datasets)
 
-labels = np.zeros(univariate_ts_datasets.shape[0])
-for i in range(num_clusters):
-    labels[cpu_model[i][1]] = i
-    
-cluster_centroids = np.zeros((num_clusters, univariate_ts_datasets.shape[1], univariate_ts_datasets.shape[2]))
-for i in range(num_clusters):
-    cluster_centroids[i] = cpu_model[i][0]
+labels = ksc.labels_ # or ksc.predict(univariate_ts_datasets)
+cluster_centroids = ksc.centroids_
     
     
 # GPU Model
-gpu_model = ks_gpu(univariate_ts_datasets, num_clusters, centroid_init='zero', max_iter=100)
+ksg = KShapeClusteringGPU(num_clusters, centroid_init='zero', max_iter=100)
+ksg.fit(univariate_ts_datasets)
 
-labels = np.zeros(univariate_ts_datasets.shape[0])
-for i in range(num_clusters):
-    labels[gpu_model[i][1]] = i
-    
-cluster_centroids = np.zeros((num_clusters, univariate_ts_datasets.shape[1], univariate_ts_datasets.shape[2]))
-for i in range(num_clusters):
-    cluster_centroids[i] = gpu_model[i][0].detach().cpu()
+labels = ksg.labels_
+cluster_centroids = ksg.centroids_.detach().cpu()
 ```
 
 ### Multivariate Example:
-```python
+``` python
 import numpy as np
-from kshape.core import kshape as ks_cpu
-from kshape.core_gpu import kshape as ks_gpu
+from kshape.core import KShapeClusteringCPU 
+from kshape.core_gpu import KShapeClusteringGPU 
 
 multivariate_ts_datasets = np.random.rand(200, 60, 6)
 num_clusters = 3
 
 # CPU Model
-cpu_model = ks_cpu(multivariate_ts_datasets, num_clusters, centroid_init='zero', max_iter=100)
+ksc = KShapeClusteringCPU(num_clusters, centroid_init='zero', max_iter=100, n_jobs=-1)
+ksc.fit(univariate_ts_datasets)
 
-labels = np.zeros(multivariate_ts_datasets.shape[0])
-for i in range(num_clusters):
-    labels[cpu_model[i][1]] = i
-    
-cluster_centroids = np.zeros((num_clusters, multivariate_ts_datasets.shape[1], multivariate_ts_datasets.shape[2]))
-for i in range(num_clusters):
-    cluster_centroids[i] = cpu_model[i][0]
+labels = ksc.labels_
+cluster_centroids = ksc.centroids_
     
     
 # GPU Model
-gpu_model = ks_gpu(multivariate_ts_datasets, num_clusters, centroid_init='zero', max_iter=100)
+ksg = KShapeClusteringGPU(num_clusters, centroid_init='zero', max_iter=100)
+ksg.fit(univariate_ts_datasets)
 
-labels = np.zeros(multivariate_ts_datasets.shape[0])
-for i in range(num_clusters):
-    labels[gpu_model[i][1]] = i
-    
-cluster_centroids = np.zeros((num_clusters, multivariate_ts_datasets.shape[1], multivariate_ts_datasets.shape[2]))
-for i in range(num_clusters):
-    cluster_centroids[i] = gpu_model[i][0].detach().cpu()
+labels = ksg.labels_
+cluster_centroids = ksg.centroids_.detach().cpu()
 ```
 
 **Also see [Examples](https://github.com/TheDatumOrg/kshape-python/tree/master/examples) for UCR/UAE dataset clustering**               
