@@ -93,7 +93,7 @@ $ python setup.py install
 We present the runtime performance of *k*-Shape when varying the number of time series, number of clusters, and the lengths of time series. (All results are the average of 5 runs.)
 
 <p align="center">
-    <img src="https://github.com/TheDatumOrg/kshape-python/blob/main/docs/benchmarks.png">
+    <img src="https://github.com/TheDatumOrg/kshape-python/blob/main/docs/benchmarking.png">
 </p>
 
 ## Usage                                                                                                                                     
